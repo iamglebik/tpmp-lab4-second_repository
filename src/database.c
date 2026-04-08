@@ -58,6 +58,20 @@ void get_all_cars(Database *db) {
     execute_query(db, "SELECT id, car_number, brand, mileage_on_purchase, capacity FROM cars;");
 }
 
+int update_car(Database *db, int id, Car *car) {
+    char sql[512];
+    snprintf(sql, sizeof(sql),
+        "UPDATE cars SET car_number='%s', brand='%s', mileage_on_purchase=%.2f, capacity=%.2f WHERE id=%d;",
+        car->number, car->brand, car->initial_mileage, car->capacity, id);
+    return execute_query(db, sql);
+}
+
+int delete_car(Database *db, int id) {
+    char sql[128];
+    snprintf(sql, sizeof(sql), "DELETE FROM cars WHERE id=%d;", id);
+    return execute_query(db, sql);
+}
+
 int add_driver(Database *db, Driver *driver) {
     char sql[1024];
     snprintf(sql, sizeof(sql),
@@ -72,7 +86,33 @@ void get_all_drivers(Database *db) {
     execute_query(db, "SELECT id, personnel_number, last_name, category, experience, address, birth_year FROM drivers;");
 }
 
+int update_driver(Database *db, int id, Driver *driver) {
+    char sql[1024];
+    snprintf(sql, sizeof(sql),
+        "UPDATE drivers SET personnel_number=%d, last_name='%s', category='%s', experience=%d, address='%s', birth_year=%d WHERE id=%d;",
+        driver->personal_id, driver->full_name, driver->category, driver->experience, driver->address, driver->birth_year, id);
+    return execute_query(db, sql);
+}
+
+int delete_driver(Database *db, int id) {
+    char sql[128];
+    snprintf(sql, sizeof(sql), "DELETE FROM drivers WHERE id=%d;", id);
+    return execute_query(db, sql);
+}
+
 int add_order(Database *db, Order *order) {
+    char check_sql[256];
+    double capacity = 0;
+    char *err_msg = NULL;
+    
+    snprintf(check_sql, sizeof(check_sql), "SELECT capacity FROM cars WHERE id = %d;", order->car_id);
+    db->rc = sqlite3_exec(db->db, check_sql, callback, &capacity, &err_msg);
+    
+    if (order->cargo_weight > capacity) {
+        printf("Ошибка: Масса груза (%.2f) превышает грузоподъемность (%.2f)\n", order->cargo_weight, capacity);
+        return 0;
+    }
+    
     char sql[512];
     snprintf(sql, sizeof(sql),
         "INSERT INTO orders (order_date, drivers_id, cars_id, mileage, cargo_mass, transport_cost) "
@@ -84,6 +124,20 @@ int add_order(Database *db, Order *order) {
 
 void get_all_orders(Database *db) {
     execute_query(db, "SELECT id, order_date, drivers_id, cars_id, mileage, cargo_mass, transport_cost FROM orders;");
+}
+
+int update_order(Database *db, int id, Order *order) {
+    char sql[512];
+    snprintf(sql, sizeof(sql),
+        "UPDATE orders SET order_date='%s', drivers_id=%d, cars_id=%d, mileage=%.2f, cargo_mass=%.2f, transport_cost=%.2f WHERE id=%d;",
+        order->date, order->driver_id, order->car_id, order->distance, order->cargo_weight, order->total_cost, id);
+    return execute_query(db, sql);
+}
+
+int delete_order(Database *db, int id) {
+    char sql[128];
+    snprintf(sql, sizeof(sql), "DELETE FROM orders WHERE id=%d;", id);
+    return execute_query(db, sql);
 }
 
 void report_all_drivers_summary(Database *db) {
