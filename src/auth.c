@@ -18,14 +18,14 @@ int authenticate(void) {
         input[strcspn(input, "\n")] = '\0';
         
         if (strcmp(input, PASSWORD) == 0) {
-            printf("\n✅ Доступ разрешен!\n\n");
+            printf("\nДоступ разрешен!\n\n");
             return 1;
         }
         
         attempts++;
-        printf("❌ Неверный пароль. Осталось попыток: %d\n\n", MAX_ATTEMPTS - attempts);
+        printf("Неверный пароль. Осталось попыток: %d\n\n", MAX_ATTEMPTS - attempts);
     }
     
-    printf("❌ Доступ запрещен!\n");
+    printf("Доступ запрещен!\n");
     return 0;
 }
