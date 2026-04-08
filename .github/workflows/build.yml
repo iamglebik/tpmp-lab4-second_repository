@@ -1,0 +1,27 @@
+name: CI / Build
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install SQLite
+      run: sudo apt-get update && sudo apt-get install -y sqlite3 libsqlite3-dev
+
+    - name: Create directories
+      run: mkdir -p bin obj
+
+    - name: Compile project
+      run: make
+
+    - name: Run tests
+      run: make test
