@@ -11,6 +11,8 @@ SOURCES = $(wildcard $(SRC_DIR)/*.c)
 OBJECTS = $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 TARGET = $(BIN_DIR)/autopark
 
+SRC_FILES = main.c auth.c menu.c database.c
+
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
@@ -31,4 +33,8 @@ test:
 	@echo "=== Running tests ==="
 	@echo "No tests yet"
 
-.PHONY: all clean run test
+info:
+	@echo "Source files: $(SOURCES)"
+	@echo "Object files: $(OBJECTS)"
+
+.PHONY: all clean run test info
