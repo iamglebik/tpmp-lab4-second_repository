@@ -1,3 +1,9 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sqlite3.h>
+#include "database.h"
+
 int add_car(Database *db, Car *car) {
     char sql[512];
     snprintf(sql, sizeof(sql),
