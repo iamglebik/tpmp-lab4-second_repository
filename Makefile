@@ -15,7 +15,9 @@ OBJECTS = $(SOURCES:$(SRC_DIR)/%.c=$(OBJ_DIR)/%.o)
 TARGET = $(BIN_DIR)/autopark
 
 TEST_SOURCES = $(wildcard $(TEST_DIR)/test_*.c)
-TEST_TARGETS = $(TEST_SOURCES:$(TEST_DIR)/%.c=$(BIN_DIR)/test_%)
+TEST_NAMES = $(notdir $(TEST_SOURCES))
+TEST_NAMES := $(TEST_NAMES:.c=)
+TEST_TARGETS = $(addprefix $(BIN_DIR)/, $(TEST_NAMES))
 
 all: $(TARGET)
 
@@ -27,7 +29,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BIN_DIR)/test_%: $(TEST_DIR)/test_%.c
+$(BIN_DIR)/%: $(TEST_DIR)/%.c
 	mkdir -p $(BIN_DIR)
 	$(CC) $< -o $@ -lsqlite3
 	./$@
