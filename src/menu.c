@@ -1,28 +1,34 @@
-#include <stdio.h>
+[08.04.2026 22:24] одна клетка мозга (и та чужая): #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "menu.h"
 
 void show_admin_menu(void) {
-    printf("        ГЛАВНОЕ МЕНЮ (АДМИН)          ║\n");
-    printf("  1. Показать всех водителей          \n");
-    printf("  2. Показать все автомобили          \n");
-    printf("  3. Показать все заказы              \n");
-    printf("  4. Добавить водителя                \n");
-    printf("  5. Добавить автомобиль              \n");
-    printf("  6. Добавить заказ                   \n");
-    printf("  7. Отчет по водителям (зарплата)    \n");
-    printf("  8. Водитель с мин. поездок          \n");
-    printf("  9. Авто с макс. пробегом            \n");
-    printf("  0. Выход                            \n");
+    printf("\n╔══════════════════════════════════════╗\n");
+    printf("║        ГЛАВНОЕ МЕНЮ (АДМИН)          ║\n");
+    printf("╠══════════════════════════════════════╣\n");
+    printf("║  1. Показать всех водителей          ║\n");
+    printf("║  2. Показать все автомобили          ║\n");
+    printf("║  3. Показать все заказы              ║\n");
+    printf("║  4. Добавить водителя                ║\n");
+    printf("║  5. Добавить автомобиль              ║\n");
+    printf("║  6. Добавить заказ                   ║\n");
+    printf("║  7. Отчет по водителям (зарплата)    ║\n");
+    printf("║  8. Водитель с мин. поездок          ║\n");
+    printf("║  9. Авто с макс. пробегом            ║\n");
+    printf("║  0. Выход                            ║\n");
+    printf("╚══════════════════════════════════════╝\n");
 }
 
 void show_driver_menu(void) {
-    printf("       ГЛАВНОЕ МЕНЮ (ВОДИТЕЛЬ)        \n");
-    printf("  1. Мои заказы                       \n");
-    printf("  2. Моя статистика                   \n");
-    printf("  3. Моя зарплата за период           \n");
-    printf("  0. Выход                            \n");
+    printf("\n╔══════════════════════════════════════╗\n");
+    printf("║       ГЛАВНОЕ МЕНЮ (ВОДИТЕЛЬ)        ║\n");
+    printf("╠══════════════════════════════════════╣\n");
+    printf("║  1. Мои заказы                       ║\n");
+    printf("║  2. Моя статистика                   ║\n");
+    printf("║  3. Моя зарплата за период           ║\n");
+    printf("║  0. Выход                            ║\n");
+    printf("╚══════════════════════════════════════╝\n");
 }
 
 void show_main_menu(Session *session, Database *db) {
@@ -80,13 +86,12 @@ void input_order_form(Order *order) {
     scanf("%lf", &order->total_cost);
     order->id = 0;
 }
-
-int handle_menu_choice(Session *session, Database *db, int choice) {
+[08.04.2026 22:24] одна клетка мозга (и та чужая): int handle_menu_choice(Session *session, Database *db, int choice) {
     Car car;
     Driver driver;
     Order order;
     char start[11], end[11];
-    double earnings;
+    int id;
     
     if (session->role == ROLE_ADMIN) {
         switch (choice) {
@@ -125,7 +130,7 @@ int handle_menu_choice(Session *session, Database *db, int choice) {
             default:
                 printf("Неверный выбор!\n");
         }
-    } else { 
+    } else {
         switch (choice) {
             case 1:
                 printf("\n--- МОИ ЗАКАЗЫ ---\n");
@@ -151,8 +156,7 @@ int handle_menu_choice(Session *session, Database *db, int choice) {
                 scanf("%s", start);
                 printf("Введите конечную дату (ГГГГ-ММ-ДД): ");
                 scanf("%s", end);
-                earnings = calc_driver_earnings_period(db, session->driver_id, start, end);
-                printf("Заработано за период: %.2f руб.\n", earnings);
+                calc_driver_earnings_period(db, session->driver_id, start, end);
                 break;
             case 0:
                 return 0;
