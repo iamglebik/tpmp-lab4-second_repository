@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sqlite3.h>
+#include <time.h>
 #include "database.h"
 
 int callback(void *NotUsed, int argc, char **argv, char **azColName) {
@@ -179,4 +180,95 @@ void find_max_mileage_car(Database *db) {
         "JOIN orders o ON c.id = o.cars_id "
         "GROUP BY c.id "
         "ORDER BY total_mileage DESC LIMIT 1;");
+}
+
+void calculate_and_save_all_drivers_earnings(Database *db, const char *start_date, const char *end_date) {
+    char sql[4096];
+    char current_date[11];
+    
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    strftime(current_date, sizeof(current_date), "%Y-%m-%d", t);
+    
+    snprintf(sql, sizeof(sql),
+        "INSERT INTO salary_report (report_date, start_period, end_period, driver_id, driver_name, trips_count, total_cargo, earnings, report_type) "
+        "SELECT "
+        "'%s', '%s', '%s', d.id, d.last_name, "
+        "COUNT(o.id), COALESCE(SUM(o.cargo_mass), 0), "
+        "COALESCE(SUM(o.transport_cost) * 0.2, 0), "
+        "'period_all' "
+        "FROM drivers d "
+        "LEFT JOIN orders o ON d.id = o.drivers_id AND o.order_date BETWEEN '%s' AND '%s' "
+        "GROUP BY d.id;",
+        current_date, start_date, end_date, start_date, end_date);
+    
+    printf("\n=== РАСЧЕТ ЗАРПЛАТ ВСЕХ ВОДИТЕЛЕЙ ЗА ПЕРИОД ===\n");
+    printf("Период: %s - %s\n", start_date, end_date);
+    
+    if (execute_query(db, sql)) {
+        printf("Результаты сохранены в таблицу salary_report\n");
+        show_salary_report(db);
+    } else {
+        printf("Ошибка при сохранении отчета\n");
+    }
+}
+
+void calculate_and_save_driver_earnings(Database *db, const char *start_date, const char *end_date, const char *driver_name) {
+    char sql[2048];
+    char current_date[11];
+    char name_pattern[100];
+    int driver_id = 0;
+    
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    strftime(current_date, sizeof(current_date), "%Y-%m-%d", t);
+    
+    snprintf(name_pattern, sizeof(name_pattern), "%%%s%%", driver_name);
+    
+    char find_sql[512];
+    snprintf(find_sql, sizeof(find_sql),
+        "SELECT id FROM drivers WHERE last_name LIKE '%s' LIMIT 1;", name_pattern);
+    
+    sqlite3_stmt *stmt;
+    db->rc = sqlite3_prepare_v2(db->db, find_sql, -1, &stmt, NULL);
+    if (db->rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW) {
+        driver_id = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+    
+    if (driver_id == 0) {
+        printf("Водитель с фамилией '%s' не найден\n", driver_name);
+        return;
+    }
+    
+    snprintf(sql, sizeof(sql),
+        "INSERT INTO salary_report (report_date, start_period, end_period, driver_id, driver_name, trips_count, total_cargo, earnings, report_type) "
+        "SELECT "
+        "'%s', '%s', '%s', d.id, d.last_name, "
+        "COUNT(o.id), COALESCE(SUM(o.cargo_mass), 0), "
+        "COALESCE(SUM(o.transport_cost) * 0.2, 0), "
+        "'period_driver' "
+        "FROM drivers d "
+        "LEFT JOIN orders o ON d.id = o.drivers_id AND o.order_date BETWEEN '%s' AND '%s' "
+        "WHERE d.id = %d;",
+        current_date, start_date, end_date, start_date, end_date, driver_id);
+    
+    printf("\n=== РАСЧЕТ ЗАРПЛАТЫ ВОДИТЕЛЯ ЗА ПЕРИОД ===\n");
+    printf("Водитель: %s\n", driver_name);
+    printf("Период: %s - %s\n", start_date, end_date);
+    
+    if (execute_query(db, sql)) {
+        printf("Результат сохранен в таблицу salary_report\n");
+        show_salary_report(db);
+    } else {
+        printf("Ошибка при сохранении отчета\n");
+    }
+}
+
+void show_salary_report(Database *db) {
+    printf("\n=== ИСТОРИЯ ОТЧЕТОВ ПО ЗАРПЛАТАМ ===\n");
+    execute_query(db, 
+        "SELECT id, report_date, start_period, end_period, driver_name, "
+        "trips_count, total_cargo, earnings, report_type "
+        "FROM salary_report ORDER BY id DESC LIMIT 10;");
 }
