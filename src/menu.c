@@ -1,4 +1,4 @@
-[08.04.2026 22:24] одна клетка мозга (и та чужая): #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "menu.h"
@@ -86,7 +86,7 @@ void input_order_form(Order *order) {
     scanf("%lf", &order->total_cost);
     order->id = 0;
 }
-[08.04.2026 22:24] одна клетка мозга (и та чужая): int handle_menu_choice(Session *session, Database *db, int choice) {
+int handle_menu_choice(Session *session, Database *db, int choice) {
     Car car;
     Driver driver;
     Order order;
