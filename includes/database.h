@@ -9,7 +9,6 @@ typedef struct {
     int rc;
 } Database;
 
-// Структуры данных
 typedef struct {
     int id;
     char number[20];
@@ -44,25 +43,20 @@ int execute_query(Database *db, const char *sql);
 int callback(void *NotUsed, int argc, char **argv, char **azColName);
 
 int add_car(Database *db, Car *car);
+void get_all_cars(Database *db);
 int update_car(Database *db, int id, Car *car);
 int delete_car(Database *db, int id);
-void get_car_by_id(Database *db, int id);
-void get_all_cars(Database *db);
 
 int add_driver(Database *db, Driver *driver);
+void get_all_drivers(Database *db);
 int update_driver(Database *db, int id, Driver *driver);
 int delete_driver(Database *db, int id);
-void get_driver_by_id(Database *db, int id);
-void get_all_drivers(Database *db);
 
 int add_order(Database *db, Order *order);
+void get_all_orders(Database *db);
 int update_order(Database *db, int id, Order *order);
 int delete_order(Database *db, int id);
-void get_order_by_id(Database *db, int id);
-void get_all_orders(Database *db);
 
-void report_driver_orders(Database *db, int driver_id, const char *start_date, const char *end_date);
-void report_car_stats(Database *db, int car_id);
 void report_all_drivers_summary(Database *db);
 double calc_driver_earnings_period(Database *db, int driver_id, const char *start, const char *end);
 void find_min_trips_driver(Database *db);
