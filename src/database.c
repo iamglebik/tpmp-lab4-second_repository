@@ -4,6 +4,47 @@
 #include <sqlite3.h>
 #include "database.h"
 
+int callback(void *NotUsed, int argc, char **argv, char **azColName) {
+    (void)NotUsed;
+    for (int i = 0; i < argc; i++) {
+        printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+    }
+    printf("\n");
+    return 0;
+}
+
+Database* init_database(const char *path) {
+    Database *db = malloc(sizeof(Database));
+    if (!db) return NULL;
+    
+    db->err_msg = NULL;
+    db->rc = sqlite3_open(path, &db->db);
+    
+    if (db->rc != SQLITE_OK) {
+        fprintf(stderr, "Cannot open database: %s\n", sqlite3_errmsg(db->db));
+        db->db = NULL;
+    }
+    return db;
+}
+
+void close_database(Database *db) {
+    if (db) {
+        sqlite3_close(db->db);
+        free(db);
+    }
+}
+
+int execute_query(Database *db, const char *sql) {
+    db->err_msg = NULL;
+    db->rc = sqlite3_exec(db->db, sql, callback, NULL, &db->err_msg);
+    if (db->rc != SQLITE_OK) {
+        fprintf(stderr, "SQL error: %s\n", db->err_msg);
+        sqlite3_free(db->err_msg);
+        return 0;
+    }
+    return 1;
+}
+
 int add_car(Database *db, Car *car) {
     char sql[512];
     snprintf(sql, sizeof(sql),
@@ -45,17 +86,15 @@ void get_all_orders(Database *db) {
     execute_query(db, "SELECT id, order_date, drivers_id, cars_id, mileage, cargo_mass, transport_cost FROM orders;");
 }
 
-
 void report_all_drivers_summary(Database *db) {
-    const char *sql = 
+    printf("\n--- ОТЧЕТ ПО ВОДИТЕЛЯМ ---\n");
+    printf("Водитель | Поездки | Масса груза | Заработано (20%%)\n");
+    execute_query(db, 
         "SELECT d.last_name, COUNT(o.id) as trips, SUM(o.cargo_mass) as total_cargo, "
         "SUM(o.transport_cost) * 0.2 as earnings "
         "FROM drivers d "
         "LEFT JOIN orders o ON d.id = o.drivers_id "
-        "GROUP BY d.id;";
-    printf("\n--- ОТЧЕТ ПО ВОДИТЕЛЯМ ---\n");
-    printf("Водитель | Поездки | Масса груза | Заработано (20%%)\n");
-    execute_query(db, sql);
+        "GROUP BY d.id;");
 }
 
 double calc_driver_earnings_period(Database *db, int driver_id, const char *start, const char *end) {
@@ -64,11 +103,12 @@ double calc_driver_earnings_period(Database *db, int driver_id, const char *star
         "SELECT SUM(transport_cost) * 0.2 as earnings FROM orders "
         "WHERE drivers_id = %d AND order_date BETWEEN '%s' AND '%s';",
         driver_id, start, end);
-    db->rc = sqlite3_exec(db->db, sql, callback, NULL, &db->err_msg);
+    execute_query(db, sql);
     return 0;
 }
 
 void find_min_trips_driver(Database *db) {
+    printf("\n--- ВОДИТЕЛЬ С НАИМЕНЬШИМ КОЛИЧЕСТВОМ ПОЕЗДОК ---\n");
     execute_query(db, 
         "SELECT d.last_name, COUNT(o.id) as trips "
         "FROM drivers d "
@@ -78,6 +118,7 @@ void find_min_trips_driver(Database *db) {
 }
 
 void find_max_mileage_car(Database *db) {
+    printf("\n--- АВТОМОБИЛЬ С МАКСИМАЛЬНЫМ ПРОБЕГОМ ---\n");
     execute_query(db,
         "SELECT c.car_number, c.brand, SUM(o.mileage) as total_mileage "
         "FROM cars c "
