@@ -25,4 +25,7 @@ void input_car_form(Car *car);
 void input_driver_form(Driver *driver);
 void input_order_form(Order *order);
 
+void calculate_and_save_all_drivers_earnings(Database* db, const char* start_date, const char* end_date);
+void calculate_and_save_driver_earnings(Database* db, const char* start_date, const char* end_date, const char* driver_name);
+void show_salary_report(Database* db);
 #endif

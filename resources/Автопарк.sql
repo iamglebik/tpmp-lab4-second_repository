@@ -47,6 +47,19 @@ CREATE TABLE users (
     FOREIGN KEY (drivers_id) REFERENCES drivers(id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
+-- Таблица для хранения отчетов по зарплатам
+CREATE TABLE IF NOT EXISTS salary_report (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    report_date TEXT NOT NULL,
+    driver_id INTEGER,
+    driver_name TEXT NOT NULL,
+    trips_count INTEGER DEFAULT 0,
+    total_cargo REAL DEFAULT 0,
+    earnings REAL DEFAULT 0,
+    report_type TEXT NOT NULL,
+    FOREIGN KEY (driver_id) REFERENCES drivers(id) ON DELETE SET NULL
+);
+
 -- Вставка данных: водители
 INSERT INTO drivers (personnel_number, last_name, category, experience, address, birth_year) VALUES 
 ('001', 'Иванов Иван Иванович', 'E', 15, 'ул. Ленина, д.1', 1980),

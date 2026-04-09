@@ -62,4 +62,8 @@ double calc_driver_earnings_period(Database *db, int driver_id, const char *star
 void find_min_trips_driver(Database *db);
 void find_max_mileage_car(Database *db);
 
+void calculate_and_save_all_drivers_earnings(Database* db, const char* start_date, const char* end_date);
+void calculate_and_save_driver_earnings(Database* db, const char* start_date, const char* end_date, const char* driver_name);
+void show_salary_report(Database* db);
+
 #endif
