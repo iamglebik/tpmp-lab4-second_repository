@@ -29,7 +29,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	mkdir -p $(OBJ_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(BIN_DIR)/%: $(TEST_DIR)/%.c
+$(BIN_DIR)/test_%: $(TEST_DIR)/test_%.c
 	mkdir -p $(BIN_DIR)
 	$(CC) $< -o $@ -lsqlite3
 	./$@
@@ -45,7 +45,8 @@ run: $(TARGET)
 
 coverage: CFLAGS += $(COV_CFLAGS)
 coverage: LDFLAGS += $(COV_LDFLAGS)
-coverage: clean test
+coverage: clean $(OBJ_DIR)/database.o $(OBJ_DIR)/main.o $(OBJ_DIR)/menu.o $(OBJ_DIR)/auth.o
+	$(CC) $(OBJ_DIR)/database.o $(OBJ_DIR)/main.o $(OBJ_DIR)/menu.o $(OBJ_DIR)/auth.o -o $(BIN_DIR)/autopark $(LDFLAGS)
 	gcov -o $(OBJ_DIR) $(SRC_DIR)/*.c
 	@echo "Coverage reports generated"
 
